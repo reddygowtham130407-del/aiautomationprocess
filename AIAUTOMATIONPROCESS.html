@@ -1,0 +1,675 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7fb">
+  <title>EAIP — Enterprise Intelligence</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --surface: #fff;
+      --ink: #182230;
+      --muted: #788496;
+      --line: #e8ecf2;
+      --nav: #111b2c;
+      --nav-muted: #9aa8bb;
+      --blue: #4c6fff;
+      --blue-soft: #edf1ff;
+      --green: #159b72;
+      --green-soft: #e8f7f1;
+      --orange: #e99538;
+      --orange-soft: #fff3e4;
+      --red: #df5b67;
+      --red-soft: #fff0f1;
+      --shadow: 0 4px 18px rgba(28, 43, 69, .045);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    svg { display: block; }
+
+    .app { display: flex; min-height: 100vh; }
+    .sidebar {
+      width: 248px; flex: 0 0 248px; background: var(--nav); color: white;
+      min-height: 100vh; padding: 22px 14px; display: flex; flex-direction: column;
+    }
+    .brand { display: flex; align-items: center; gap: 11px; padding: 0 9px 28px; }
+    .brand-mark {
+      width: 37px; height: 37px; display: grid; place-items: center; border-radius: 12px;
+      color: #fff; background: linear-gradient(145deg, #6e8aff, #4c6fff);
+      box-shadow: 0 5px 16px #4c6fff55;
+    }
+    .brand-mark svg { width: 21px; height: 21px; }
+    .brand-name { font-size: 15px; font-weight: 750; letter-spacing: -.3px; }
+    .brand-caption { color: #9aa8bb; font-size: 10px; margin-top: 3px; letter-spacing: .9px; }
+    .workspace {
+      background: #1b293d; border: 1px solid #29384d; border-radius: 10px; padding: 11px;
+      display: flex; align-items: center; gap: 9px; margin: 0 4px 23px;
+    }
+    .workspace-logo {
+      width: 29px; height: 29px; border-radius: 8px; background: #2e4564;
+      display: grid; place-items: center; font-size: 12px; font-weight: 700;
+    }
+    .workspace small { display: block; color: var(--nav-muted); font-size: 10px; margin-bottom: 3px; }
+    .workspace strong { font-size: 12px; font-weight: 600; }
+    .workspace .chevron { margin-left: auto; color: var(--nav-muted); font-size: 13px; }
+    .nav-label { color: #718198; font-size: 9px; font-weight: 700; letter-spacing: 1.15px; padding: 0 11px; margin: 0 0 8px; }
+    .nav-list { display: grid; gap: 3px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 11px; width: 100%; padding: 10px 11px; border: 0;
+      border-radius: 8px; color: var(--nav-muted); background: transparent; text-align: left;
+      font-size: 12px; transition: .18s ease;
+    }
+    .nav-item:hover { background: #1b293d; color: white; }
+    .nav-item.active { background: #293a56; color: white; box-shadow: inset 2px 0 #7f96ff; }
+    .nav-item svg { width: 16px; height: 16px; opacity: .9; }
+    .nav-item .badge { margin-left: auto; color: #ffcf7e; background: #4c3a24; border-radius: 10px; font-size: 9px; padding: 3px 6px; }
+    .sidebar-bottom { margin-top: auto; }
+    .help-card { border: 1px solid #29384d; background: #172438; border-radius: 11px; padding: 13px; margin: 15px 3px; }
+    .help-card strong { display: block; font-size: 11px; margin-bottom: 5px; }
+    .help-card p { color: var(--nav-muted); font-size: 10px; line-height: 1.5; margin: 0 0 10px; }
+    .help-card button { background: #263752; border: 0; color: white; font-size: 10px; border-radius: 6px; padding: 7px 9px; }
+    .profile { border-top: 1px solid #29384d; padding: 15px 4px 0; display: flex; align-items: center; gap: 9px; }
+    .avatar { width: 31px; height: 31px; border-radius: 50%; display: grid; place-items: center; background: #dce5ff; color: #4359a6; font-size: 11px; font-weight: 700; }
+    .profile-info { min-width: 0; }
+    .profile-info strong { display: block; font-size: 11px; }
+    .profile-info span { color: var(--nav-muted); display: block; font-size: 9px; margin-top: 3px; }
+    .profile-more { margin-left: auto; color: var(--nav-muted); }
+
+    .main { flex: 1; min-width: 0; }
+    .topbar {
+      height: 68px; padding: 0 34px; background: rgba(255,255,255,.82); border-bottom: 1px solid var(--line);
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      position: sticky; top: 0; z-index: 4; backdrop-filter: blur(12px);
+    }
+    .crumb { color: var(--muted); font-size: 11px; }
+    .crumb strong { color: var(--ink); font-weight: 600; }
+    .top-actions { display: flex; align-items: center; gap: 10px; }
+    .search {
+      display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: white;
+      border-radius: 8px; padding: 8px 10px; width: 205px;
+    }
+    .search svg { width: 14px; height: 14px; color: #9aa4b2; flex: 0 0 auto; }
+    .search input { width: 100%; outline: 0; border: 0; background: transparent; font-size: 11px; color: var(--ink); }
+    .search input::placeholder { color: #9aa4b2; }
+    .icon-button {
+      border: 1px solid var(--line); background: white; width: 34px; height: 34px; border-radius: 8px;
+      color: #657185; display: grid; place-items: center; position: relative;
+    }
+    .icon-button svg { width: 15px; height: 15px; }
+    .notification-dot { width: 6px; height: 6px; position: absolute; top: 7px; right: 7px; border-radius: 50%; background: var(--red); border: 1px solid white; }
+    .content { max-width: 1480px; margin: 0 auto; padding: 29px 34px 40px; }
+    .page-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 22px; }
+    h1 { font-size: 21px; letter-spacing: -.55px; margin: 0; }
+    .subtitle { color: var(--muted); font-size: 11px; margin: 7px 0 0; }
+    .heading-actions { display: flex; gap: 8px; }
+    .select, .button {
+      border: 1px solid var(--line); background: white; color: #4d596a; border-radius: 7px;
+      padding: 8px 10px; font-size: 10px;
+    }
+    .button { display: inline-flex; align-items: center; gap: 7px; font-weight: 600; }
+    .button svg { width: 13px; height: 13px; }
+    .button.primary { background: var(--blue); border-color: var(--blue); color: white; }
+    .button:hover { filter: brightness(.98); }
+    .demo-note { display: inline-flex; gap: 6px; align-items: center; color: #8a641c; background: #fff8e8; border: 1px solid #f4e7c8; border-radius: 6px; padding: 6px 9px; font-size: 9px; margin-bottom: 16px; }
+    .demo-note span { width: 5px; height: 5px; background: #e5ae38; border-radius: 50%; }
+
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 13px; margin-bottom: 15px; }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 11px; box-shadow: var(--shadow); }
+    .kpi-card { padding: 16px 17px 14px; }
+    .kpi-top { display: flex; justify-content: space-between; align-items: center; }
+    .kpi-label { font-size: 10px; color: var(--muted); font-weight: 550; }
+    .kpi-icon { width: 29px; height: 29px; border-radius: 8px; display: grid; place-items: center; }
+    .kpi-icon svg { width: 14px; height: 14px; }
+    .tint-blue { background: var(--blue-soft); color: var(--blue); }
+    .tint-green { background: var(--green-soft); color: var(--green); }
+    .tint-orange { background: var(--orange-soft); color: var(--orange); }
+    .tint-red { background: var(--red-soft); color: var(--red); }
+    .kpi-value { font-size: 22px; font-weight: 700; letter-spacing: -.65px; margin: 12px 0 7px; }
+    .kpi-foot { color: var(--muted); font-size: 9px; display: flex; align-items: center; gap: 5px; }
+    .trend { font-weight: 650; color: var(--green); }
+    .trend.down { color: var(--red); }
+    .kpi-foot .period { margin-left: 1px; }
+
+    .dashboard-grid { display: grid; grid-template-columns: minmax(0, 1.8fr) minmax(260px, .9fr); gap: 14px; margin-bottom: 14px; }
+    .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; padding: 16px 17px 0; }
+    .card-title { font-size: 12px; font-weight: 650; margin: 0; }
+    .card-subtitle { font-size: 9px; color: var(--muted); margin: 5px 0 0; }
+    .chart-legend { display: flex; gap: 13px; align-items: center; color: var(--muted); font-size: 9px; }
+    .legend-item { display: flex; align-items: center; gap: 5px; }
+    .legend-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--blue); }
+    .legend-dot.pale { background: #cbd5ff; }
+    .chart-wrap { padding: 12px 15px 10px; }
+    .revenue-chart { width: 100%; height: 190px; overflow: visible; }
+    .chart-gridline { stroke: #edf0f5; stroke-width: 1; }
+    .chart-label { fill: #98a2b1; font-size: 9px; font-family: inherit; }
+    .chart-line { fill: none; stroke: var(--blue); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .chart-area { fill: url(#areaFill); }
+    .chart-line-secondary { fill: none; stroke: #c8d1e2; stroke-width: 1.8; stroke-dasharray: 4 4; }
+    .chart-point { fill: white; stroke: var(--blue); stroke-width: 2; }
+    .chart-summary { border-top: 1px solid var(--line); padding: 11px 17px; display: flex; gap: 23px; }
+    .summary-stat span { display: block; font-size: 9px; color: var(--muted); margin-bottom: 4px; }
+    .summary-stat strong { font-size: 11px; font-weight: 650; }
+
+    .insights-card { padding-bottom: 5px; }
+    .ai-label { background: #f0edff; color: #7659ca; border-radius: 5px; font-size: 8px; font-weight: 700; padding: 4px 6px; letter-spacing: .3px; }
+    .insight { display: flex; gap: 10px; padding: 13px 17px; border-top: 1px solid #f0f2f6; }
+    .insight:first-of-type { margin-top: 12px; }
+    .insight-marker { width: 25px; height: 25px; flex: 0 0 auto; border-radius: 7px; display: grid; place-items: center; }
+    .insight-marker svg { width: 13px; height: 13px; }
+    .insight strong { display: block; font-size: 10px; font-weight: 650; margin: 1px 0 4px; }
+    .insight p { color: var(--muted); font-size: 9px; line-height: 1.5; margin: 0; }
+    .insight a { color: var(--blue); text-decoration: none; font-size: 9px; display: inline-block; margin-top: 5px; font-weight: 600; }
+
+    .lower-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1.5fr) minmax(220px, .85fr); gap: 14px; }
+    .simple-card { padding: 16px 17px; }
+    .donut-row { display: flex; align-items: center; justify-content: center; gap: 20px; padding: 17px 0 11px; }
+    .donut {
+      width: 110px; height: 110px; border-radius: 50%;
+      background: conic-gradient(#4c6fff 0 34%, #25b78b 34% 61%, #f0ad55 61% 80%, #e4e9f1 80% 100%);
+      display: grid; place-items: center; position: relative;
+    }
+    .donut::before { content: ""; position: absolute; inset: 14px; border-radius: 50%; background: white; }
+    .donut-center { z-index: 1; text-align: center; }
+    .donut-center strong { display: block; font-size: 17px; }
+    .donut-center span { color: var(--muted); font-size: 8px; }
+    .legend-list { display: grid; gap: 9px; }
+    .legend-row { display: flex; align-items: center; gap: 6px; font-size: 9px; color: var(--muted); }
+    .legend-row strong { margin-left: auto; color: var(--ink); font-size: 9px; }
+    .legend-swatch { width: 7px; height: 7px; border-radius: 2px; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 380px; }
+    th { text-align: left; color: #8a95a5; font-size: 8px; font-weight: 600; padding: 12px 9px; border-bottom: 1px solid var(--line); }
+    td { padding: 11px 9px; border-bottom: 1px solid #f0f2f6; font-size: 9px; white-space: nowrap; }
+    tr:last-child td { border-bottom: 0; }
+    .product { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+    .product-thumb { width: 25px; height: 25px; border-radius: 7px; display: grid; place-items: center; background: #f0f3f9; color: #62738c; font-size: 10px; }
+    .status { display: inline-block; padding: 4px 7px; border-radius: 9px; font-size: 8px; font-weight: 600; }
+    .status.good { background: var(--green-soft); color: var(--green); }
+    .status.warning { background: var(--orange-soft); color: #b87925; }
+    .status.risk { background: var(--red-soft); color: var(--red); }
+    .risk-score { display: flex; align-items: center; gap: 7px; font-size: 9px; }
+    .risk-bar { width: 48px; height: 4px; border-radius: 4px; background: #edf0f5; overflow: hidden; }
+    .risk-fill { height: 100%; background: var(--orange); border-radius: inherit; }
+    .activity-list { display: grid; margin-top: 12px; }
+    .activity { display: flex; gap: 9px; padding: 9px 0; border-top: 1px solid #f0f2f6; }
+    .activity-icon { width: 25px; height: 25px; border-radius: 7px; background: #f1f3f8; display: grid; place-items: center; flex: 0 0 auto; font-size: 10px; }
+    .activity-text { color: #4c596b; font-size: 9px; line-height: 1.45; }
+    .activity-text strong { color: var(--ink); font-weight: 650; }
+    .activity-time { color: #9aa4b2; display: block; font-size: 8px; margin-top: 3px; }
+
+    .module-view { display: none; }
+    .module-intro { margin: 22px 0 16px; padding: 20px; }
+    .module-intro p { margin: 8px 0 0; color: var(--muted); font-size: 11px; line-height: 1.6; max-width: 680px; }
+    .module-cards { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 13px; }
+    .module-card { padding: 17px; }
+    .module-card .kpi-icon { margin-bottom: 14px; }
+    .module-card strong { font-size: 12px; display: block; }
+    .module-card p { font-size: 10px; color: var(--muted); line-height: 1.55; margin: 7px 0 0; }
+    .module-table { margin-top: 14px; padding: 0 16px 8px; }
+    .module-table .card-head { padding: 16px 0 0; }
+    .empty-state { color: var(--muted); font-size: 10px; padding: 28px 10px; text-align: center; }
+    .toast { position: fixed; bottom: 20px; right: 22px; background: #172438; color: white; padding: 11px 15px; border-radius: 8px; font-size: 11px; box-shadow: 0 8px 24px #17243833; opacity: 0; transform: translateY(8px); transition: .2s; pointer-events: none; z-index: 10; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .mobile-menu { display: none; }
+
+    @media (max-width: 1100px) {
+      .sidebar { width: 215px; flex-basis: 215px; }
+      .content { padding-left: 22px; padding-right: 22px; }
+      .topbar { padding: 0 22px; }
+      .lower-grid { grid-template-columns: 1fr 1.4fr; }
+      .lower-grid > :last-child { grid-column: 1 / -1; }
+      .activity-list { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    }
+    @media (max-width: 760px) {
+      .sidebar { position: fixed; z-index: 8; left: -255px; top: 0; bottom: 0; transition: left .2s; width: 240px; }
+      .sidebar.open { left: 0; }
+      .mobile-menu { display: grid; }
+      .topbar { height: 58px; padding: 0 14px; }
+      .content { padding: 20px 14px 30px; }
+      .search { width: 155px; }
+      .crumb { display: none; }
+      .page-heading { align-items: flex-start; }
+      h1 { font-size: 18px; }
+      .heading-actions { flex-wrap: wrap; justify-content: flex-end; }
+      .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+      .kpi-card { padding: 13px; }
+      .kpi-value { font-size: 19px; }
+      .dashboard-grid { grid-template-columns: 1fr; }
+      .lower-grid { grid-template-columns: 1fr; }
+      .lower-grid > :last-child { grid-column: auto; }
+      .activity-list { grid-template-columns: 1fr; }
+      .module-cards { grid-template-columns: 1fr; }
+      .chart-legend { display: none; }
+      .demo-note { font-size: 8px; }
+    }
+    @media (max-width: 430px) {
+      .top-actions { gap: 6px; }
+      .search { width: 125px; padding: 7px; }
+      .page-heading { display: block; }
+      .heading-actions { justify-content: flex-start; margin-top: 13px; }
+      .chart-summary { gap: 15px; }
+    }
+  </style>
+</head>
+<body>
+  <svg aria-hidden="true" width="0" height="0" style="position:absolute">
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 19V5M4 19h17"/><path d="m7 15 4-4 3 2 6-7"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+    <symbol id="i-wallet" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="15" rx="2"/><path d="M3 9h18M16 14h2"/><path d="M6 5V3h12v2"/></symbol>
+    <symbol id="i-box" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="M3 8v9l9 5 9-5V8M12 13v9"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3 1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3Z"/><path d="m19 14 1 2.5 2 1-2 1-1 2.5-1-2.5-2-1 2-1 1-2.5Z"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="m19.4 15 .1.1 1.4 1.1-1.4 2.4-1.7-.7a8 8 0 0 1-1.7 1l-.3 1.8h-2.8l-.3-1.8a8 8 0 0 1-1.7-1l-1.7.7-1.4-2.4 1.4-1.1a7 7 0 0 1 0-2l-1.4-1.1 1.4-2.4 1.7.7a8 8 0 0 1 1.7-1l.3-1.8h2.8l.3 1.8a8 8 0 0 1 1.7 1l1.7-.7 1.4 2.4-1.4 1.1a7 7 0 0 1 0 2Z" transform="translate(-1 -1) scale(1.08)"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5M12 15V3"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+    <symbol id="i-trend" viewBox="0 0 24 24"><path d="m3 17 6-6 4 4 8-9"/><path d="M15 6h6v6"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="m10.3 3.9-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3.1l-8-14a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></symbol>
+  </svg>
+
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark"><svg><use href="#i-spark"/></svg></div>
+        <div><div class="brand-name">Nexus Intelligence</div><div class="brand-caption">ENTERPRISE AI PLATFORM</div></div>
+      </div>
+      <div class="workspace">
+        <div class="workspace-logo">A</div>
+        <div><small>Workspace</small><strong>Acme Corporation</strong></div>
+        <span class="chevron">⌄</span>
+      </div>
+      <div class="nav-label">WORKSPACE</div>
+      <nav class="nav-list" id="navigation">
+        <button class="nav-item active" data-page="Overview"><svg><use href="#i-grid"/></svg>Overview</button>
+        <button class="nav-item" data-page="Sales & Forecasting"><svg><use href="#i-chart"/></svg>Sales & Forecasting</button>
+        <button class="nav-item" data-page="Customers"><svg><use href="#i-users"/></svg>Customers</button>
+        <button class="nav-item" data-page="Finance & Risk"><svg><use href="#i-wallet"/></svg>Finance & Risk</button>
+        <button class="nav-item" data-page="Inventory"><svg><use href="#i-box"/></svg>Inventory <span class="badge">3</span></button>
+        <button class="nav-item" data-page="Reports"><svg><use href="#i-file"/></svg>Reports</button>
+        <button class="nav-item" data-page="AI Assistant"><svg><use href="#i-spark"/></svg>AI Assistant</button>
+        <div class="nav-label" style="margin-top:19px">ADMINISTRATION</div>
+        <button class="nav-item" data-page="People & Access"><svg><use href="#i-users"/></svg>People & Access</button>
+        <button class="nav-item" data-page="Integrations"><svg><use href="#i-box"/></svg>Integrations</button>
+        <button class="nav-item" data-page="AI Governance"><svg><use href="#i-settings"/></svg>AI Governance</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="help-card">
+          <strong>Need a hand?</strong>
+          <p>Explore the platform guide and learn how to get more from your data.</p>
+          <button type="button" onclick="notify('Help center opened')">Open help center ↗</button>
+        </div>
+        <div class="profile">
+          <div class="avatar">JD</div>
+          <div class="profile-info"><strong>Jordan Davis</strong><span>Executive Admin</span></div>
+          <span class="profile-more">•••</span>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="icon-button mobile-menu" id="menuButton" aria-label="Open menu"><svg><use href="#i-menu"/></svg></button>
+          <div class="crumb">Workspace <span style="margin:0 7px;color:#c0c7d1">/</span> <strong id="breadcrumb">Overview</strong></div>
+        </div>
+        <div class="top-actions">
+          <label class="search"><svg><use href="#i-search"/></svg><input id="searchInput" type="search" placeholder="Search anything..."></label>
+          <button class="icon-button" id="notificationsButton" aria-label="Notifications"><svg><use href="#i-bell"/></svg><span class="notification-dot"></span></button>
+          <div class="avatar">JD</div>
+        </div>
+      </header>
+
+      <div class="content">
+        <section id="dashboardView">
+          <div class="page-heading">
+            <div><h1>Good morning, Jordan <span style="font-size:18px">✦</span></h1><p class="subtitle">Here’s your organization’s intelligence overview for today.</p></div>
+            <div class="heading-actions">
+              <select class="select" id="dateRange" aria-label="Choose date range">
+                <option value="30">Last 30 days</option><option value="7">Last 7 days</option><option value="90">Last 90 days</option><option value="365">This year</option>
+              </select>
+              <button class="button" id="exportButton"><svg><use href="#i-download"/></svg>Export</button>
+              <button class="button primary" id="reportButton"><svg><use href="#i-file"/></svg>Generate report</button>
+            </div>
+          </div>
+          <div class="demo-note"><span></span> Demo workspace · Sample data for illustration only</div>
+
+          <div class="kpi-grid">
+            <article class="card kpi-card">
+              <div class="kpi-top"><span class="kpi-label">Total Revenue</span><span class="kpi-icon tint-blue"><svg><use href="#i-wallet"/></svg></span></div>
+              <div class="kpi-value">₹85.4L</div>
+              <div class="kpi-foot"><span class="trend">↗ 12.8%</span><span class="period">vs. previous period</span></div>
+            </article>
+            <article class="card kpi-card">
+              <div class="kpi-top"><span class="kpi-label">Net Profit</span><span class="kpi-icon tint-green"><svg><use href="#i-trend"/></svg></span></div>
+              <div class="kpi-value">₹18.5L</div>
+              <div class="kpi-foot"><span class="trend">↗ 8.3%</span><span class="period">vs. previous period</span></div>
+            </article>
+            <article class="card kpi-card">
+              <div class="kpi-top"><span class="kpi-label">Active Customers</span><span class="kpi-icon tint-orange"><svg><use href="#i-users"/></svg></span></div>
+              <div class="kpi-value">12,450</div>
+              <div class="kpi-foot"><span class="trend">↗ 6.2%</span><span class="period">vs. previous period</span></div>
+            </article>
+            <article class="card kpi-card">
+              <div class="kpi-top"><span class="kpi-label">Business Risk Score</span><span class="kpi-icon tint-red"><svg><use href="#i-alert"/></svg></span></div>
+              <div class="kpi-value">24<span style="font-size:12px;color:var(--muted);font-weight:500">/100</span></div>
+              <div class="kpi-foot"><span class="trend">Low risk</span><span class="period">↓ 4 points this month</span></div>
+            </article>
+          </div>
+
+          <div class="dashboard-grid">
+            <article class="card">
+              <div class="card-head">
+                <div><h2 class="card-title">Revenue performance</h2><p class="card-subtitle">Revenue trends and AI forecast</p></div>
+                <div class="chart-legend"><span class="legend-item"><i class="legend-dot"></i>Actual revenue</span><span class="legend-item"><i class="legend-dot pale"></i>Forecast</span></div>
+              </div>
+              <div class="chart-wrap">
+                <svg class="revenue-chart" viewBox="0 0 700 205" role="img" aria-label="Revenue chart showing actual and forecast performance">
+                  <defs><linearGradient id="areaFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#4c6fff" stop-opacity=".16"/><stop offset="100%" stop-color="#4c6fff" stop-opacity="0"/></linearGradient></defs>
+                  <line class="chart-gridline" x1="45" y1="20" x2="680" y2="20"/><line class="chart-gridline" x1="45" y1="59" x2="680" y2="59"/><line class="chart-gridline" x1="45" y1="98" x2="680" y2="98"/><line class="chart-gridline" x1="45" y1="137" x2="680" y2="137"/><line class="chart-gridline" x1="45" y1="176" x2="680" y2="176"/>
+                  <text class="chart-label" x="4" y="23">₹20L</text><text class="chart-label" x="4" y="62">₹15L</text><text class="chart-label" x="4" y="101">₹10L</text><text class="chart-label" x="10" y="140">₹5L</text><text class="chart-label" x="19" y="179">₹0</text>
+                  <path class="chart-area" d="M55 137 L105 128 L155 131 L205 111 L255 117 L305 94 L355 101 L405 77 L455 83 L505 60 L555 67 L605 47 L655 51 L655 176 L55 176 Z"/>
+                  <path class="chart-line" d="M55 137 L105 128 L155 131 L205 111 L255 117 L305 94 L355 101 L405 77 L455 83 L505 60 L555 67 L605 47 L655 51"/>
+                  <path class="chart-line-secondary" d="M455 83 L505 71 L555 56 L605 44 L655 34"/>
+                  <circle class="chart-point" cx="655" cy="51" r="4"/>
+                  <text class="chart-label" x="48" y="196">May 01</text><text class="chart-label" x="144" y="196">May 05</text><text class="chart-label" x="244" y="196">May 10</text><text class="chart-label" x="344" y="196">May 15</text><text class="chart-label" x="444" y="196">May 20</text><text class="chart-label" x="544" y="196">May 25</text><text class="chart-label" x="635" y="196">May 30</text>
+                </svg>
+              </div>
+              <div class="chart-summary">
+                <div class="summary-stat"><span>Period revenue</span><strong>₹85,40,000</strong></div>
+                <div class="summary-stat"><span>Forecast next month</span><strong>₹92,10,000 <span class="trend">↗ 7.8%</span></strong></div>
+                <div class="summary-stat"><span>Forecast confidence</span><strong>87%</strong></div>
+              </div>
+            </article>
+
+            <article class="card insights-card">
+              <div class="card-head">
+                <div><h2 class="card-title">AI business insights</h2><p class="card-subtitle">Prioritized signals from your data</p></div><span class="ai-label">AI POWERED</span>
+              </div>
+              <div class="insight">
+                <span class="insight-marker tint-green"><svg><use href="#i-trend"/></svg></span>
+                <div><strong>Revenue is trending up</strong><p>Revenue is 12.8% higher than the previous period, led by the West region.</p><a href="#" data-insight="Revenue trend">View analysis ↗</a></div>
+              </div>
+              <div class="insight">
+                <span class="insight-marker tint-orange"><svg><use href="#i-alert"/></svg></span>
+                <div><strong>Inventory attention needed</strong><p>3 products may fall below their estimated reorder points within 14 days.</p><a href="#" data-insight="Inventory risks">Review inventory ↗</a></div>
+              </div>
+              <div class="insight">
+                <span class="insight-marker tint-red"><svg><use href="#i-users"/></svg></span>
+                <div><strong>Customer churn signal</strong><p>500 customer accounts show elevated churn indicators this month.</p><a href="#" data-insight="Customer churn">Explore customers ↗</a></div>
+              </div>
+            </article>
+          </div>
+
+          <div class="lower-grid">
+            <article class="card simple-card">
+              <div><h2 class="card-title">Revenue by department</h2><p class="card-subtitle">Contribution to total revenue</p></div>
+              <div class="donut-row">
+                <div class="donut"><div class="donut-center"><strong>₹85.4L</strong><span>Total revenue</span></div></div>
+              </div>
+              <div class="legend-list">
+                <div class="legend-row"><i class="legend-swatch" style="background:#4c6fff"></i>Sales<strong>34%</strong></div>
+                <div class="legend-row"><i class="legend-swatch" style="background:#25b78b"></i>Services<strong>27%</strong></div>
+                <div class="legend-row"><i class="legend-swatch" style="background:#f0ad55"></i>Online<strong>19%</strong></div>
+                <div class="legend-row"><i class="legend-swatch" style="background:#e4e9f1"></i>Other<strong>20%</strong></div>
+              </div>
+            </article>
+
+            <article class="card" style="overflow:hidden">
+              <div class="card-head"><div><h2 class="card-title">Inventory watchlist</h2><p class="card-subtitle">Stock compared with predicted demand</p></div><button class="button" data-page-link="Inventory">View all <svg><use href="#i-arrow"/></svg></button></div>
+              <div class="table-wrap" style="padding:0 8px">
+                <table>
+                  <thead><tr><th>PRODUCT</th><th>IN STOCK</th><th>FORECAST</th><th>STATUS</th></tr></thead>
+                  <tbody>
+                    <tr><td><span class="product"><i class="product-thumb">▰</i>Laptop Pro 14</span></td><td>25</td><td>100</td><td><span class="status risk">Reorder</span></td></tr>
+                    <tr><td><span class="product"><i class="product-thumb">◉</i>Wireless Mouse</span></td><td>500</td><td>150</td><td><span class="status good">Healthy</span></td></tr>
+                    <tr><td><span class="product"><i class="product-thumb">⌨</i>Keyboard K2</span></td><td>10</td><td>80</td><td><span class="status warning">Urgent</span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </article>
+
+            <article class="card simple-card">
+              <div><h2 class="card-title">Recent activity</h2><p class="card-subtitle">Latest platform events</p></div>
+              <div class="activity-list">
+                <div class="activity"><span class="activity-icon tint-blue">↗</span><div class="activity-text"><strong>Monthly forecast</strong> was updated<span class="activity-time">12 minutes ago</span></div></div>
+                <div class="activity"><span class="activity-icon tint-orange">!</span><div class="activity-text"><strong>3 stock alerts</strong> need review<span class="activity-time">48 minutes ago</span></div></div>
+                <div class="activity"><span class="activity-icon tint-green">✓</span><div class="activity-text"><strong>Finance report</strong> is ready<span class="activity-time">2 hours ago</span></div></div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="module-view" id="moduleView">
+          <div class="page-heading">
+            <div><h1 id="moduleTitle">Sales & Forecasting</h1><p class="subtitle" id="moduleSubtitle">Explore performance, trends, and forecasts across your business.</p></div>
+            <div class="heading-actions"><select class="select"><option>Last 30 days</option><option>Last 7 days</option><option>Last 90 days</option></select><button class="button primary" id="moduleAction">Create new</button></div>
+          </div>
+          <div class="demo-note"><span></span> Demo workspace · Sample data for illustration only</div>
+          <div class="card module-intro">
+            <span class="ai-label">ENTERPRISE INTELLIGENCE</span>
+            <p id="moduleDescription">A unified view of your business signals, analytics, and AI-powered recommendations.</p>
+          </div>
+          <div class="module-cards" id="moduleCards"></div>
+          <div class="card module-table">
+            <div class="card-head"><div><h2 class="card-title" id="tableTitle">Latest activity</h2><p class="card-subtitle">Illustrative records from your workspace</p></div><button class="button" id="moduleExport"><svg><use href="#i-download"/></svg>Export</button></div>
+            <div class="table-wrap">
+              <table><thead id="moduleTableHead"></thead><tbody id="moduleTableBody"></tbody></table>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const pageData = {
+      "Sales & Forecasting": {
+        subtitle: "Understand sales performance and plan for what comes next.",
+        description: "Track revenue across products and regions, compare performance with targets, and review forecast scenarios. Forecasts shown here are illustrative and should be validated against connected business data.",
+        cards: [["₹85.4L", "Revenue this period", "+12.8% vs. previous period", "blue"], ["₹92.1L", "Next month forecast", "87% forecast confidence", "green"], ["76%", "Sales target progress", "Across all business units", "orange"]],
+        columns: ["PERIOD", "REVENUE", "TARGET", "STATUS"],
+        rows: [["May 2026", "₹17.2L", "₹16.0L", "Above target"], ["April 2026", "₹15.0L", "₹16.0L", "On track"], ["March 2026", "₹13.0L", "₹14.0L", "On track"]]
+      },
+      "Customers": {
+        subtitle: "Explore customer segments, retention signals, and lifetime value.",
+        description: "Review customer activity and retention indicators to help teams prioritize outreach. AI-generated scores are decision-support signals, not guarantees of future behavior.",
+        cards: [["12,450", "Active customers", "+6.2% this period", "blue"], ["₹24,800", "Avg. customer value", "Illustrative estimate", "green"], ["500", "Accounts to review", "Elevated churn signals", "orange"]],
+        columns: ["SEGMENT", "CUSTOMERS", "AVG. VALUE", "SIGNAL"],
+        rows: [["Enterprise", "1,240", "₹82,400", "Healthy"], ["Growth", "4,810", "₹28,600", "Monitor"], ["Emerging", "6,400", "₹9,800", "Healthy"]]
+      },
+      "Finance & Risk": {
+        subtitle: "Monitor financial performance, expenses, and risk indicators.",
+        description: "Review high-level financial signals and flagged activity. This demonstration does not connect to a financial institution or validate real transactions.",
+        cards: [["₹18.5L", "Net profit", "+8.3% vs. previous period", "green"], ["₹66.9L", "Operating expenses", "78% of planned budget", "blue"], ["24/100", "Business risk score", "Low risk · down 4 points", "orange"]],
+        columns: ["CATEGORY", "ACTUAL", "BUDGET", "STATUS"],
+        rows: [["Operations", "₹22.4L", "₹24.0L", "Within budget"], ["Marketing", "₹12.1L", "₹11.0L", "Review"], ["Technology", "₹9.8L", "₹10.5L", "Within budget"]]
+      },
+      "Inventory": {
+        subtitle: "Balance stock levels with demand and supplier lead times.",
+        description: "See inventory health and estimated demand. Reorder recommendations are examples; connect verified stock, demand, and supplier data before taking action.",
+        cards: [["8,420", "Units in stock", "Across 126 products", "blue"], ["14 days", "Demand horizon", "Forecast planning window", "green"], ["3", "Reorder alerts", "Require review", "orange"]],
+        columns: ["PRODUCT", "IN STOCK", "PREDICTED DEMAND", "RECOMMENDATION"],
+        rows: [["Laptop Pro 14", "25", "100", "Reorder"], ["Wireless Mouse", "500", "150", "Healthy"], ["Keyboard K2", "10", "80", "Urgent review"]]
+      },
+      "Reports": {
+        subtitle: "Create and access business reports from verified data.",
+        description: "Prepare executive, financial, sales, and inventory reports. In a connected deployment, reports should be generated from verified database results and approved data sources.",
+        cards: [["12", "Reports this month", "Across 4 categories", "blue"], ["4", "Scheduled reports", "Next run: tomorrow", "green"], ["2", "Awaiting review", "Approval required", "orange"]],
+        columns: ["REPORT", "OWNER", "UPDATED", "STATUS"],
+        rows: [["Monthly business summary", "Jordan Davis", "Today, 9:15 AM", "Ready"], ["Inventory forecast", "Operations team", "Yesterday", "Ready"], ["Quarterly finance review", "Finance team", "May 28", "In review"]]
+      },
+      "AI Assistant": {
+        subtitle: "Ask questions about business performance in natural language.",
+        description: "This frontend demo provides sample responses only. A production assistant should check permissions, use approved data queries, and ground answers in verified results.",
+        cards: [["Ask", "Business questions", "Use natural language", "blue"], ["Explore", "Insights and trends", "See supporting signals", "green"], ["Prepare", "Draft business actions", "Require human approval", "orange"]],
+        columns: ["SUGGESTED QUESTION", "CATEGORY", "ACTION", "STATUS"],
+        rows: [["What was our revenue this month?", "Revenue", "Ask assistant", "Available"], ["Which products need reorder review?", "Inventory", "Ask assistant", "Available"], ["Summarize customer retention signals", "Customers", "Ask assistant", "Available"]]
+      },
+      "People & Access": {
+        subtitle: "Manage people, roles, and access to workspace data.",
+        description: "Review sample team members and role assignments. Production access controls should be enforced by your identity provider and backend services.",
+        cards: [["850", "Active employees", "Across 8 departments", "blue"], ["8", "Access roles", "Role-based permissions", "green"], ["3", "Pending invites", "Awaiting acceptance", "orange"]],
+        columns: ["TEAM MEMBER", "DEPARTMENT", "ROLE", "STATUS"],
+        rows: [["Jordan Davis", "Executive", "Executive Admin", "Active"], ["Morgan Lee", "Finance", "Finance Manager", "Active"], ["Taylor Chen", "Operations", "Analyst", "Active"]]
+      },
+      "Integrations": {
+        subtitle: "Connect business systems and monitor incoming data.",
+        description: "A production integration pipeline should validate, clean, and transform imported data, while reporting connection health and import errors.",
+        cards: [["4", "Connected sources", "Demo connections", "green"], ["2", "Available connectors", "Configure when ready", "blue"], ["98.4%", "Data quality score", "Illustrative metric", "orange"]],
+        columns: ["DATA SOURCE", "TYPE", "LAST SYNC", "STATUS"],
+        rows: [["Sales CRM", "CRM", "Today, 9:04 AM", "Connected"], ["Finance system", "ERP", "Today, 8:30 AM", "Connected"], ["People directory", "HRIS", "Yesterday", "Review"]]
+      },
+      "AI Governance": {
+        subtitle: "Monitor model quality, usage, and responsible AI workflows.",
+        description: "Track model versions, evaluation metrics, data quality, and approval workflows. These sample metrics are illustrative and are not a substitute for governance controls.",
+        cards: [["6", "Models monitored", "Across 3 use cases", "blue"], ["94.2%", "Avg. model quality", "Illustrative score", "green"], ["2", "Reviews required", "Human review queue", "orange"]],
+        columns: ["MODEL", "USE CASE", "VERSION", "STATUS"],
+        rows: [["Revenue Forecast", "Sales prediction", "v2.4", "Monitored"], ["Customer Signals", "Retention analysis", "v1.8", "Review due"], ["Demand Planner", "Inventory forecast", "v1.3", "Monitored"]]
+      }
+    };
+
+    const iconForTint = {
+      blue: '<svg><use href="#i-chart"/></svg>',
+      green: '<svg><use href="#i-trend"/></svg>',
+      orange: '<svg><use href="#i-alert"/></svg>'
+    };
+
+    function notify(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(window.toastTimer);
+      window.toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
+    }
+
+    function renderModule(page) {
+      const data = pageData[page];
+      if (!data) return;
+      document.getElementById("dashboardView").style.display = "none";
+      document.getElementById("moduleView").style.display = "block";
+      document.getElementById("breadcrumb").textContent = page;
+      document.getElementById("moduleTitle").textContent = page;
+      document.getElementById("moduleSubtitle").textContent = data.subtitle;
+      document.getElementById("moduleDescription").textContent = data.description;
+      document.getElementById("tableTitle").textContent = page === "AI Assistant" ? "Suggested questions" : "Workspace overview";
+      document.getElementById("moduleCards").innerHTML = data.cards.map(card => `
+        <article class="card module-card">
+          <span class="kpi-icon tint-${card[3]}">${iconForTint[card[3]]}</span>
+          <strong>${card[0]} <span style="font-weight:500;color:#788496">${card[1]}</span></strong>
+          <p>${card[2]}</p>
+        </article>`).join("");
+      document.getElementById("moduleTableHead").innerHTML = `<tr>${data.columns.map(c => `<th>${c}</th>`).join("")}</tr>`;
+      document.getElementById("moduleTableBody").innerHTML = data.rows.map(row => `<tr>${row.map((cell, index) => {
+        if (index === row.length - 1) return `<td><span class="status ${/review|reorder|urgent/i.test(cell) ? "warning" : "good"}">${cell}</span></td>`;
+        return `<td>${cell}</td>`;
+      }).join("")}</tr>`).join("");
+      document.getElementById("sidebar").classList.remove("open");
+    }
+
+    function showPage(page) {
+      document.querySelectorAll(".nav-item").forEach(item => item.classList.toggle("active", item.dataset.page === page));
+      if (page === "Overview") {
+        document.getElementById("dashboardView").style.display = "block";
+        document.getElementById("moduleView").style.display = "none";
+        document.getElementById("breadcrumb").textContent = "Overview";
+      } else {
+        renderModule(page);
+      }
+    }
+
+    document.getElementById("navigation").addEventListener("click", event => {
+      const item = event.target.closest(".nav-item");
+      if (item) showPage(item.dataset.page);
+    });
+
+    document.querySelectorAll("[data-page-link]").forEach(button => {
+      button.addEventListener("click", () => {
+        const page = button.dataset.pageLink;
+        showPage(page);
+        document.querySelectorAll(".nav-item").forEach(item => item.classList.toggle("active", item.dataset.page === page));
+      });
+    });
+
+    document.getElementById("menuButton").addEventListener("click", () => {
+      document.getElementById("sidebar").classList.toggle("open");
+    });
+
+    document.getElementById("notificationsButton").addEventListener("click", () => {
+      notify("You’re all caught up.");
+    });
+
+    document.getElementById("exportButton").addEventListener("click", () => {
+      const rows = [
+        ["Metric", "Value"],
+        ["Total Revenue", "₹85.4L"],
+        ["Net Profit", "₹18.5L"],
+        ["Active Customers", "12450"],
+        ["Business Risk Score", "24/100"]
+      ];
+      const csv = rows.map(row => row.map(value => `"${String(value).replace(/"/g, '""')}"`).join(",")).join("\n");
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+      link.download = "eaip-dashboard-demo.csv";
+      link.click();
+      URL.revokeObjectURL(link.href);
+      notify("Demo dashboard exported as CSV.");
+    });
+
+    document.getElementById("reportButton").addEventListener("click", () => {
+      notify("Demo report prepared. Connect verified data to generate real reports.");
+    });
+
+    document.getElementById("moduleAction").addEventListener("click", () => {
+      notify("Connect a backend to enable this action.");
+    });
+
+    document.getElementById("moduleExport").addEventListener("click", () => {
+      const rows = [...document.querySelectorAll("#moduleTableHead th")].map(cell => cell.textContent);
+      const body = [...document.querySelectorAll("#moduleTableBody tr")].map(row =>
+        [...row.querySelectorAll("td")].map(cell => cell.textContent.trim())
+      );
+      const csv = [rows, ...body].map(row => row.map(value => `"${value.replace(/"/g, '""')}"`).join(",")).join("\n");
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+      link.download = "eaip-module-demo.csv";
+      link.click();
+      URL.revokeObjectURL(link.href);
+      notify("Module data exported as CSV.");
+    });
+
+    document.getElementById("dateRange").addEventListener("change", event => {
+      notify(`Showing illustrative data for the selected ${event.target.options[event.target.selectedIndex].text.toLowerCase()}.`);
+    });
+
+    document.getElementById("searchInput").addEventListener("input", event => {
+      const query = event.target.value.trim().toLowerCase();
+      const rows = document.querySelectorAll("#moduleTableBody tr");
+      rows.forEach(row => row.style.display = row.textContent.toLowerCase().includes(query) ? "" : "none");
+      if (document.getElementById("moduleView").style.display === "block" && query) {
+        const visible = [...rows].some(row => row.style.display !== "none");
+        if (!visible) document.getElementById("moduleTableBody").innerHTML = '<tr><td colspan="5" class="empty-state">No matching records found.</td></tr>';
+      }
+    });
+
+    document.addEventListener("click", event => {
+      const link = event.target.closest("[data-insight]");
+      if (link) {
+        event.preventDefault();
+        const target = link.dataset.insight;
+        const page = target.includes("Inventory") ? "Inventory" : target.includes("customer") ? "Customers" : "Sales & Forecasting";
+        showPage(page);
+        document.querySelectorAll(".nav-item").forEach(item => item.classList.toggle("active", item.dataset.page === page));
+      }
+    });
+  </script>
+</body>
+</html>
